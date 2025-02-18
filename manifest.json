@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "name": "Texbox Certificate Detector",
+  "version": "1.0",
+  "description": "Detects and decodes certificates in textboxes",
+  "permissions": [
+    "activeTab"
+  ],
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["forge.min.js", "content.js"]
+    }
+  ]
+} 
