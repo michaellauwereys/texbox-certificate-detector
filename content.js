@@ -122,7 +122,6 @@ function highlightInputElement(element, certText, color, opacity, startIndex, hi
             padding: computedStyle.padding,
             border: computedStyle.border,
             boxSizing: computedStyle.boxSizing,
-            color: '#000000'
         });
 
         // Measure text dimensions
@@ -179,7 +178,6 @@ function highlightTextElement(element, certText, color, opacity, startIndex, hig
             span.dataset.highlightId = highlightId;
             Object.assign(span.style, {
                 backgroundColor: hexToRgba(color, opacity),
-                color: '#000000'
             });
 
             range.surroundContents(span);
