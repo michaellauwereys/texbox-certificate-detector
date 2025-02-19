@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            width: 600px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .settings-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section {
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        .element-rules {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .element-rule {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .element-rule input {
+            padding: 5px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+        }
+        .element-rule button {
+            padding: 5px 10px;
+            background-color: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-rule-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #38a169;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .save-button {
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: #2c5282;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .save-button:hover, .add-rule-button:hover {
+            opacity: 0.9;
+        }
+        .status-message {
+            margin-top: 10px;
+            color: #38a169;
+        }
+        .setting-item p {
+            font-size: 0.8em;
+            color: #64748b;
+        }
+        select {
+            padding: 5px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <div class="section-title">Display Settings</div>
+        <div class="settings-container">
+            <div class="setting-item">
+                <input type="checkbox" id="showCertId" checked>
+                <label for="showCertId">Show Certificate ID</label>
+            </div>
+            <div class="setting-item">
+                <input type="checkbox" id="showSubject" checked>
+                <label for="showSubject">Show Subject</label>
+            </div>
+            <div class="setting-item">
+                <input type="checkbox" id="showIssuer" checked>
+                <label for="showIssuer">Show Issuer</label>
+            </div>
+            <div class="setting-item">
+                <input type="checkbox" id="showValidFrom" checked>
+                <label for="showValidFrom">Show Valid From Date</label>
+            </div>
+            <div class="setting-item">
+                <input type="checkbox" id="showValidTo" checked>
+                <label for="showValidTo">Show Valid To Date</label>
+            </div>
+            <div class="setting-item">
+                <input type="checkbox" id="showFingerprint" checked>
+                <label for="showFingerprint">Show Fingerprint</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Date Format Settings</div>
+        <div class="settings-container">
+            <div class="setting-item">
+                <label for="dateFormat">Date Format:</label>
+                <select id="dateFormat">
+                    <option value="short">Short (Jan 15, 2024)</option>
+                    <option value="full">Full (January 15, 2024)</option>
+                    <option value="iso">ISO (2024-01-15)</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="timeFormat">Time Format:</label>
+                <select id="timeFormat">
+                    <option value="24">24-hour (14:30)</option>
+                    <option value="12">12-hour (2:30 PM)</option>
+                    <option value="none">Hide Time</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="timezone">Timezone:</label>
+                <select id="timezone">
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">Eastern Time</option>
+                    <option value="America/Chicago">Central Time</option>
+                    <option value="America/Denver">Mountain Time</option>
+                    <option value="America/Los_Angeles">Pacific Time</option>
+                    <option value="Europe/London">London</option>
+                    <option value="Europe/Paris">Paris</option>
+                    <option value="Europe/Berlin">Berlin</option>
+                    <option value="Asia/Tokyo">Tokyo</option>
+                    <option value="Asia/Shanghai">Shanghai</option>
+                    <option value="Australia/Sydney">Sydney</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Highlighting Settings</div>
+        <div class="setting-item">
+            <p>This setting does not work for textareas.</p>
+        </div>
+        <div class="settings-container">
+            <div class="setting-item">
+                <input type="checkbox" id="enableHighlighting" checked>
+                <label for="enableHighlighting">Enable Certificate Highlighting</label>
+            </div>
+            <div class="setting-item">
+                <label for="highlightOpacity">Highlight Opacity:</label>
+                <input type="range" id="highlightOpacity" min="0.1" max="0.5" step="0.1" value="0.3">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Element Detection Rules</div>
+        <div id="elementRules" class="element-rules">
+            <!-- Rules will be added here dynamically -->
+        </div>
+        <button id="addRule" class="add-rule-button">Add New Rule</button>
+    </div>
+
+    <button class="save-button" id="saveSettings">Save Settings</button>
+    <div id="status" class="status-message"></div>
+    <script src="settings.js"></script>
+</body>
+</html> 

@@ -6,6 +6,9 @@
             width: 400px;
             padding: 10px;
             font-family: Arial, sans-serif;
+            user-select: text;
+            -moz-user-select: text;
+            cursor: text;
         }
         .cert-container {
             margin-bottom: 15px;
@@ -15,11 +18,39 @@
         }
         .cert-id {
             font-weight: bold;
-            color: #2c5282;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #000000 !important;
         }
         .cert-details {
             margin-left: 10px;
+        }
+        .cert-details div {
+            margin: 3px 0;
+            word-break: break-all;
+        }
+        .duplicate-warning {
+            cursor: help;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            color: #b45309;
+        }
+        .invalid-cert {
+            border-color: #ef4444;
+            background-color: #fee2e2;
+        }
+        .invalid-warning {
+            color: #dc2626;
+            font-size: 14px;
+            cursor: help;
+            display: inline-flex;
+            align-items: center;
+        }
+        .warning-icon {
+            margin-left: 5px;
         }
     </style>
 </head>
