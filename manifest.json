@@ -24,7 +24,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "texbox-certificate-detector@example.com"
+      "id": "certificate-detector"
     }
   },
   "icons": {
