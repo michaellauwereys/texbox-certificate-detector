@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Texbox Certificate Detector",
+  "name": "Certificate Detector",
   "version": "1.0",
   "description": "Detects and decodes certificates in textboxes",
   "permissions": [
@@ -12,7 +12,7 @@
     "browser_style": true
   },
   "options_ui": {
-    "page": "settings.html",
+    "page": "options.html",
     "browser_style": true,
     "open_in_tab": true
   },
@@ -26,5 +26,9 @@
     "gecko": {
       "id": "texbox-certificate-detector@example.com"
     }
+  },
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
   }
 } 

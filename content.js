@@ -18,35 +18,62 @@ const HIGHLIGHT_COLORS = [
 
 // Function to format date based on settings
 function formatDate(date, dateFormat, timeFormat, timezone = 'UTC') {
+    // Handle UTC offset timezones
+    let tzOffset = 0;
+    if (timezone.startsWith('UTC')) {
+        const match = timezone.match(/UTC([+-]\d+)/);
+        if (match) {
+            tzOffset = parseInt(match[1]) * 60; // Convert hours to minutes
+            timezone = 'UTC';
+        }
+    }
+    
+    // Adjust date for UTC offset
+    const adjustedDate = new Date(date.getTime() + tzOffset * 60000);
+
     if (dateFormat === 'iso') {
-        return date.toLocaleString('en-US', { timeZone: timezone }).split(',')[0] + 
-               (timeFormat !== 'none' ? ' ' + formatTime(date, timeFormat, timezone) : '');
+        return adjustedDate.toISOString().split('T')[0] + 
+               (timeFormat !== 'none' ? ' ' + formatTime(adjustedDate, timeFormat) : '');
+    }
+
+    if (dateFormat === 'eu-short') {
+        const day = adjustedDate.getUTCDate().toString().padStart(2, '0');
+        const month = (adjustedDate.getUTCMonth() + 1).toString().padStart(2, '0');
+        const year = adjustedDate.getUTCFullYear();
+        return `${day}-${month}-${year}` + 
+               (timeFormat !== 'none' ? ' ' + formatTime(adjustedDate, timeFormat) : '');
+    }
+
+    if (dateFormat === 'eu-full') {
+        const day = adjustedDate.getUTCDate();
+        const month = adjustedDate.toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });
+        const year = adjustedDate.getUTCFullYear();
+        return `${day} ${month} ${year}` + 
+               (timeFormat !== 'none' ? ' ' + formatTime(adjustedDate, timeFormat) : '');
     }
 
     const options = {
         year: 'numeric',
         month: dateFormat === 'short' ? 'short' : 'long',
         day: 'numeric',
-        timeZone: timezone,
-        ...(timeFormat !== 'none' && {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: timeFormat === '12'
-        })
+        timeZone: 'UTC'
     };
 
-    return date.toLocaleString('en-US', options);
+    return adjustedDate.toLocaleString('en-US', options) + 
+           (timeFormat !== 'none' ? ' ' + formatTime(adjustedDate, timeFormat) : '');
 }
 
-function formatTime(date, timeFormat, timezone = 'UTC') {
+function formatTime(date, timeFormat) {
     if (timeFormat === 'none') return '';
     
-    return date.toLocaleString('en-US', {
+    const options = {
         hour: '2-digit',
         minute: '2-digit',
         hour12: timeFormat === '12',
-        timeZone: timezone
-    });
+        timeZone: 'UTC'
+    };
+
+    return date.toLocaleString('en-US', options);
 }
 
 // Function to remove all existing highlights
@@ -196,42 +223,136 @@ function decodeCertificate(certString, settings, colorIndex, isTextarea = false)
         const cleanCert = certString
             .replace(/-----BEGIN CERTIFICATE-----|-----END CERTIFICATE-----|\s/g, '');
         
-        if (!cleanCert) throw new Error('Empty certificate');
+        if (!cleanCert) {
+            throw new Error('Empty certificate');
+        }
 
         try {
             const binaryDer = atob(cleanCert);
-            if (!binaryDer) throw new Error('Invalid base64 encoding');
+            if (!binaryDer) {
+                throw new Error('Invalid base64 encoding');
+            }
 
             const buffer = forge.util.createBuffer(binaryDer);
-            const cert = forge.pki.certificateFromAsn1(forge.asn1.fromDer(buffer));
-            
-            const now = new Date();
-            const notBefore = cert.validity.notBefore;
-            const notAfter = cert.validity.notAfter;
-            
-            const validationStatus = {
-                isValid: now >= notBefore && now <= notAfter,
-                issues: []
-            };
+            if (buffer.length() === 0) {
+                throw new Error('Empty buffer');
+            }
 
-            if (now < notBefore) validationStatus.issues.push('Certificate not yet valid');
-            if (now > notAfter) validationStatus.issues.push('Certificate has expired');
-
-            const subjectCN = cert.subject.getField('CN');
-            const issuerCN = cert.issuer.getField('CN');
+            const asn1 = forge.asn1.fromDer(buffer);
+            let cert;
             
-            return {
-                success: true,
-                certId: cleanCert.slice(-5),
-                subject: subjectCN?.value || 'No CN',
-                issuer: issuerCN?.value || 'No CN',
-                validFrom: formatDate(notBefore, settings.dateFormat, settings.timeFormat, settings.timezone),
-                validTo: formatDate(notAfter, settings.dateFormat, settings.timeFormat, settings.timezone),
-                originalText: certString,
-                highlightColor: HIGHLIGHT_COLORS[colorIndex % HIGHLIGHT_COLORS.length],
-                isTextarea,
-                validationStatus
-            };
+            try {
+                cert = forge.pki.certificateFromAsn1(asn1);
+            } catch (e) {
+                if (e.message.includes('Cannot read public key')) {
+                    // For non-RSA certificates, parse ASN.1 manually
+                    const tbsCert = asn1.value[0];
+                    const validity = tbsCert.value[4];
+                    
+                    // Extract and parse validity dates
+                    const notBeforeValue = validity.value[0].value.toString();
+                    const notAfterValue = validity.value[1].value.toString();
+                    const notBefore = forge.asn1.utcTimeToDate(notBeforeValue);
+                    const notAfter = forge.asn1.utcTimeToDate(notAfterValue);
+                    
+                    // Extract subject and issuer
+                    const subject = tbsCert.value[5];
+                    const issuer = tbsCert.value[3];
+                    
+                    // Helper function to find CN in name
+                    const findCN = (name) => {
+                        if (!name?.value) return null;
+                        for (const set of name.value) {
+                            if (!set?.value) continue;
+                            for (const attr of set.value) {
+                                if (attr?.value?.[0]?.value === '2.5.4.3') { // OID for CN
+                                    return attr.value[1].value;
+                                }
+                            }
+                        }
+                        return null;
+                    };
+                    
+                    const subjectCN = findCN(subject);
+                    const issuerCN = findCN(issuer);
+                    const now = new Date();
+                    
+                    const validationStatus = {
+                        isValid: true,
+                        issues: []
+                    };
+
+                    if (now < notBefore) {
+                        validationStatus.issues.push('Certificate not yet valid');
+                        validationStatus.isValid = false;
+                    } else if (now > notAfter) {
+                        validationStatus.issues.push('Certificate has expired');
+                        validationStatus.isValid = false;
+                    }
+                    
+                    // Calculate fingerprint
+                    const md = forge.md.md5.create();
+                    md.update(binaryDer);
+                    const fingerprint = md.digest().toHex().match(/.{2}/g).join(':').toUpperCase();
+                    
+                    return {
+                        success: true,
+                        certId: cleanCert.slice(-5),
+                        subject: subjectCN || 'No CN',
+                        issuer: issuerCN || 'No CN',
+                        validFrom: formatDate(notBefore, settings.dateFormat, settings.timeFormat, settings.timezone),
+                        validTo: formatDate(notAfter, settings.dateFormat, settings.timeFormat, settings.timezone),
+                        fingerprint: fingerprint,
+                        originalText: certString,
+                        highlightColor: HIGHLIGHT_COLORS[colorIndex % HIGHLIGHT_COLORS.length],
+                        isTextarea,
+                        validationStatus
+                    };
+                } else {
+                    throw e;
+                }
+            }
+            
+            if (cert) {
+                const now = new Date();
+                const notBefore = cert.validity.notBefore;
+                const notAfter = cert.validity.notAfter;
+                
+                const validationStatus = {
+                    isValid: true,
+                    issues: []
+                };
+
+                if (now < notBefore) {
+                    validationStatus.issues.push('Certificate not yet valid');
+                    validationStatus.isValid = false;
+                } else if (now > notAfter) {
+                    validationStatus.issues.push('Certificate has expired');
+                    validationStatus.isValid = false;
+                }
+
+                const subjectCN = cert.subject.getField('CN');
+                const issuerCN = cert.issuer.getField('CN');
+                
+                // Calculate fingerprint
+                const md = forge.md.md5.create();
+                md.update(binaryDer);
+                const fingerprint = md.digest().toHex().match(/.{2}/g).join(':').toUpperCase();
+                
+                return {
+                    success: true,
+                    certId: cleanCert.slice(-5),
+                    subject: subjectCN?.value || 'No CN',
+                    issuer: issuerCN?.value || 'No CN',
+                    validFrom: formatDate(notBefore, settings.dateFormat, settings.timeFormat, settings.timezone),
+                    validTo: formatDate(notAfter, settings.dateFormat, settings.timeFormat, settings.timezone),
+                    fingerprint: fingerprint,
+                    originalText: certString,
+                    highlightColor: HIGHLIGHT_COLORS[colorIndex % HIGHLIGHT_COLORS.length],
+                    isTextarea,
+                    validationStatus
+                };
+            }
         } catch (e) {
             return createInvalidCertResponse(certString, isTextarea, `Invalid certificate format: ${e.message}`);
         }

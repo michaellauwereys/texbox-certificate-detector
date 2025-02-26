@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
             port.onMessage.addListener(function(response) {
                 if (response.action === "certificatesFound") {
                     const certificatesDiv = document.getElementById('certificates');
+                    certificatesDiv.textContent = ''; // Clear existing content
                     
                     if (response.certificates && response.certificates.length > 0) {
                         // Create a map to track duplicates by certId
@@ -37,54 +38,89 @@ document.addEventListener('DOMContentLoaded', function() {
                             const certDiv = document.createElement('div');
                             certDiv.className = 'cert-container' + (!cert.validationStatus?.isValid ? ' invalid-cert' : '');
                             
-                            let certHtml = '';
-                            
                             if (settings.showCertId) {
-                                let idHtml = '';
-                                if (cert.isTextarea) {
-                                    // Plain display for textarea certificates
-                                    idHtml = `<div class="cert-id" style="color: inherit; background: none;">Certificate ID: ${cert.certId}`;
-                                } else {
-                                    // Colored display for other certificates
-                                    const style = settings.enableHighlighting ? 
-                                        `style="color: ${cert.highlightColor}; background-color: ${cert.highlightColor}80;"` : '';
-                                    idHtml = `<div class="cert-id" ${style}>Certificate ID: ${cert.certId}`;
+                                const certIdDiv = document.createElement('div');
+                                certIdDiv.className = 'cert-id';
+                                
+                                if (!cert.isTextarea && settings.enableHighlighting) {
+                                    certIdDiv.style.color = cert.highlightColor;
+                                    certIdDiv.style.backgroundColor = cert.highlightColor + '33';
                                 }
 
-                                // Add warnings
+                                const certIdSpan = document.createElement('span');
+                                certIdSpan.textContent = `Certificate ID: ${cert.certId}`;
+                                certIdDiv.appendChild(certIdSpan);
+
+                                // Add warnings container
+                                const warningContainer = document.createElement('div');
+                                warningContainer.className = 'warning-container';
+
+                                const warnings = [];
                                 if (!cert.validationStatus?.isValid) {
-                                    idHtml += ` <span class="invalid-warning warning-icon" title="${cert.validationStatus.issues.join(', ')}">&#9888;</span>`;
+                                    warnings.push(...cert.validationStatus.issues);
                                 }
                                 if (certIdCount.get(cert.certId) > 1) {
-                                    idHtml += ` <span class="duplicate-warning warning-icon" title="This certificate appears ${certIdCount.get(cert.certId)} times on this page">&#9888;</span>`;
+                                    warnings.push(`This certificate appears ${certIdCount.get(cert.certId)} times on this page`);
                                 }
-                                idHtml += '</div>';
-                                certHtml += idHtml;
+
+                                if (warnings.length > 0) {
+                                    const warningIcon = document.createElement('span');
+                                    warningIcon.className = 'warning-icon';
+                                    warningIcon.textContent = '⚠';
+
+                                    const tooltip = document.createElement('div');
+                                    tooltip.className = 'tooltip';
+
+                                    const warningList = document.createElement('ul');
+                                    warnings.forEach(warning => {
+                                        const li = document.createElement('li');
+                                        li.textContent = warning;
+                                        warningList.appendChild(li);
+                                    });
+
+                                    tooltip.appendChild(warningList);
+                                    warningIcon.appendChild(tooltip);
+                                    warningContainer.appendChild(warningIcon);
+                                }
+
+                                certIdDiv.appendChild(warningContainer);
+                                certDiv.appendChild(certIdDiv);
                             }
                             
-                            certHtml += '<div class="cert-details">';
+                            const detailsDiv = document.createElement('div');
+                            detailsDiv.className = 'cert-details';
+
+                            const createDetailRow = (label, value) => {
+                                if (value) {
+                                    const div = document.createElement('div');
+                                    div.textContent = `${label}: ${value}`;
+                                    detailsDiv.appendChild(div);
+                                }
+                            };
+
                             if (settings.showSubject) {
-                                certHtml += `<div>Subject: ${cert.subject}</div>`;
+                                createDetailRow('Subject', cert.subject);
                             }
                             if (settings.showIssuer) {
-                                certHtml += `<div>Issuer: ${cert.issuer}</div>`;
+                                createDetailRow('Issuer', cert.issuer);
                             }
                             if (settings.showValidFrom) {
-                                certHtml += `<div>Valid From: ${cert.validFrom}</div>`;
+                                createDetailRow('Valid From', cert.validFrom);
                             }
                             if (settings.showValidTo) {
-                                certHtml += `<div>Valid To: ${cert.validTo}</div>`;
+                                createDetailRow('Valid To', cert.validTo);
                             }
                             if (settings.showFingerprint && cert.fingerprint) {
-                                certHtml += `<div>Fingerprint: ${cert.fingerprint}</div>`;
+                                createDetailRow('Fingerprint', cert.fingerprint);
                             }
-                            certHtml += '</div>';
-                            
-                            certDiv.innerHTML = certHtml;
+
+                            certDiv.appendChild(detailsDiv);
                             certificatesDiv.appendChild(certDiv);
                         });
                     } else {
-                        certificatesDiv.textContent = 'No certificates found on this page.';
+                        const noResults = document.createElement('div');
+                        noResults.textContent = 'No certificates found on this page.';
+                        certificatesDiv.appendChild(noResults);
                     }
                 }
             });

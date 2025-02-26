@@ -21,6 +21,7 @@
             margin-bottom: 5px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 5px;
             color: #000000 !important;
         }
@@ -30,6 +31,62 @@
         .cert-details div {
             margin: 3px 0;
             word-break: break-all;
+        }
+        .warning-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .warning-icon {
+            cursor: help;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            color: #dc2626;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        .warning-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #1f2937;
+            color: white;
+            text-align: left;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1;
+            transition: opacity 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            min-width: 200px;
+            margin-right: 10px;
+        }
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            transform: translateY(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent transparent #1f2937;
+        }
+        .tooltip ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .tooltip li {
+            margin: 2px 0;
         }
         .duplicate-warning {
             cursor: help;
@@ -48,9 +105,6 @@
             cursor: help;
             display: inline-flex;
             align-items: center;
-        }
-        .warning-icon {
-            margin-left: 5px;
         }
     </style>
 </head>

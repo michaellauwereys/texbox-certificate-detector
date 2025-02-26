@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Certificate Detector</title>
+    <link rel="icon" type="image/png" href="icons/icon-48.png">
+    <style>
+        body {
+            width: 600px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section {
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        .element-rules {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .element-rule {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .element-rule input {
+            padding: 5px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+        }
+        .element-rule button {
+            padding: 5px 10px;
+            background-color: #c55454;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .element-rule button::after {
+            content: "Delete";
+            font-size: 16px;
+        }
+        @font-face {
+            font-family: "Font Awesome 5 Free";
+            font-style: normal;
+            font-weight: 900;
+            src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/webfonts/fa-solid-900.woff2") format("woff2");
+        }
+        .save-button {
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: #2c5282;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .save-button:hover, .add-rule-button:hover {
+            opacity: 0.9;
+        }
+        .status-message {
+            margin-top: 10px;
+            color: #38a169;
+        }
+        .option-item p {
+            font-size: 0.8em;
+            color: #64748b;
+        }
+        select {
+            padding: 5px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            background-color: white;
+        }
+        .action-button {
+            padding: 8px 16px;
+            background-color: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .action-button:hover {
+            background-color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <div class="section-title">Display Options</div>
+        <div class="options-container">
+            <div class="option-item">
+                <input type="checkbox" id="showCertId" checked>
+                <label for="showCertId">Show Certificate ID</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="showSubject" checked>
+                <label for="showSubject">Show Subject</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="showIssuer" checked>
+                <label for="showIssuer">Show Issuer</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="showValidFrom" checked>
+                <label for="showValidFrom">Show Valid From Date</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="showValidTo" checked>
+                <label for="showValidTo">Show Valid To Date</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="showFingerprint" checked>
+                <label for="showFingerprint">Show Fingerprint</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Date Format Options</div>
+        <div class="options-container">
+            <div class="option-item">
+                <label for="timezone">Timezone:</label>
+                <select id="timezone">
+                    <option value="UTC-12">UTC-12</option>
+                    <option value="UTC-11">UTC-11</option>
+                    <option value="UTC-10">UTC-10</option>
+                    <option value="UTC-9">UTC-9</option>
+                    <option value="UTC-8">UTC-8</option>
+                    <option value="UTC-7">UTC-7</option>
+                    <option value="UTC-6">UTC-6</option>
+                    <option value="UTC-5">UTC-5</option>
+                    <option value="UTC-4">UTC-4</option>
+                    <option value="UTC-3">UTC-3</option>
+                    <option value="UTC-2">UTC-2</option>
+                    <option value="UTC-1">UTC-1</option>
+                    <option value="UTC">UTC</option>
+                    <option value="UTC+1">UTC+1</option>
+                    <option value="UTC+2">UTC+2</option>
+                    <option value="UTC+3">UTC+3</option>
+                    <option value="UTC+4">UTC+4</option>
+                    <option value="UTC+5">UTC+5</option>
+                    <option value="UTC+6">UTC+6</option>
+                    <option value="UTC+7">UTC+7</option>
+                    <option value="UTC+8">UTC+8</option>
+                    <option value="UTC+9">UTC+9</option>
+                    <option value="UTC+10">UTC+10</option>
+                    <option value="UTC+11">UTC+11</option>
+                    <option value="UTC+12">UTC+12</option>
+                </select>
+            </div>
+            <div class="option-item">
+                <label for="dateFormat">Date Format:</label>
+                <select id="dateFormat">
+                    <option value="eu-short">EU Short (15-01-2024)</option>
+                    <option value="eu-full">EU Full (15 January 2024)</option>
+                    <option value="short">US Short (Jan 15, 2024)</option>
+                    <option value="full">US Full (January 15, 2024)</option>
+                    <option value="iso">ISO (2024-01-15)</option>
+                </select>
+            </div>
+            <div class="option-item">
+                <label for="timeFormat">Time Format:</label>
+                <select id="timeFormat">
+                    <option value="24">24-hour (14:30)</option>
+                    <option value="12">12-hour (2:30 PM)</option>
+                    <option value="none">Hide Time</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Highlighting Options</div>
+        <div class="option-item">
+            <p>This option does not work for textareas.</p>
+        </div>
+        <div class="options-container">
+            <div class="option-item">
+                <input type="checkbox" id="enableHighlighting" checked>
+                <label for="enableHighlighting">Enable Certificate Highlighting</label>
+            </div>
+            <div class="option-item">
+                <label for="highlightOpacity">Highlight Opacity:</label>
+                <input type="range" id="highlightOpacity" min="0.1" max="0.5" step="0.1" value="0.3">
+                <div id="highlightPreview" style="margin-left: 10px; padding: 5px 10px; border-radius: 4px; display: inline-block; background-color: rgba(255, 87, 51, 0.3);">Preview</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Element Detection Rules</div>
+        <div id="elementRules" class="element-rules">
+            <!-- Rules will be added here dynamically -->
+        </div>
+        <button id="addRule" class="action-button" style="margin-top: 10px;">Add New Rule</button>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Import/Export Options</div>
+        <div class="options-container">
+            <div class="option-item">
+                <button id="exportOptions" class="action-button">Export Options</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+                <button id="importOptions" class="action-button">Import Options</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="save-button" id="saveOptions">Save Options</button>
+    <div id="status" class="status-message"></div>
+    <script src="options.js"></script>
+</body>
+</html> 
