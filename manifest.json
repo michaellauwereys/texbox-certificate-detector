@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Certificate Detector",
   "version": "1.0",
-  "description": "Detects and decodes certificates in textboxes",
+  "description": "Detects and decodes certificates shown on a page.",
   "permissions": [
     "activeTab",
     "storage"
